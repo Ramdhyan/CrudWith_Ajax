@@ -1,0 +1,169 @@
+﻿@model CrudWith_Ajax.Models.AllCLass
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+
+@using (Html.BeginForm()) 
+{
+    @Html.AntiForgeryToken()
+    
+    <div class="form-horizontal">
+        <h4>AllCLass</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Email, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Create" id="btnsave" class="btn btn-default" onclick="Add();"/>
+                <input type="submit" value="Update" id="btnupdate" class="btn btn-default" onclick="Update();" style="display:none"/>
+            </div>
+        </div>
+    </div>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+<table class="table">
+    <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>Email</th>
+    </tr>
+    <tbody id="tbody">
+
+    </tbody>
+</table>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script>
+    $(document).ready(function () {
+        DisplayData();
+    })
+
+    function Add() {
+        debugger
+        var Obj = {
+            Name: $("#Name").val(),
+            Email: $("#Email").val(),
+        }
+        $.ajax({
+            url: "/Home/Index",
+            type: "POST",
+            data: JSON.stringify(Obj),
+            contentType: "application/json;charset-utf=8",
+            dataType: "json",
+            success: function () {
+                alert('Record Added ');
+            },
+            error: function (res) {
+                alert('Error');
+            }
+        })
+    }
+
+    function DisplayData() {
+        debugger;
+        $.ajax({
+            url: "/Home/Display",
+            type: "GET",
+            contentType: "application/json;charset-utf=8",
+            dataType: "json",
+            success: function (res) {
+                var html = '';
+                $.each(res, function (key, item) {
+                    html += "<tr>";
+                    html += "<td>" + item.Id + "</td>";
+                    html += "<td>" + item.Name + "</td>";
+                    html += "<td>" + item.Email + "</td>";
+                    html += "<td><a href='#' onclick='GetById(" + item.Id + ")' >update</a>||<a href='#' onclick='Delete(" + item.Id + ")' >Delete</a></td>";
+                    html += "</tr>";
+                });
+               $("#tbody").html(html);
+            },
+            error: function (res) {
+                alert('Error');
+            }
+        })
+    } function GetById(Id) {
+        $.ajax({
+            url: "/Home/GetById/" + Id,
+            type: "GET",
+            contentType: "application/json;charset-utf=8",
+            dataType: "json",
+            success: function (res) {
+                //$("#Id").val(res.Id);
+                $("#Name").val(res.Name);
+                $("#Email").val(res.Email);
+                $("#btnsave").hide();
+                $("#btnupdate").show();
+            },
+            error: function (res) {
+                alert(res);
+            }
+        })
+    }
+    function Update() {
+        var Objdata = {
+            Name: $("#Name").val(),
+            Email: $("#Email").val(),
+        }
+        $.ajax({
+            url: "/Home/Update",
+            type: "POST",
+            data: JSON.stringify(Objdata),
+            contentType: "application/json;charset-utf=8",
+            dataType: "json",
+            success: function () {
+                alert('Record Updated ');
+                $("#Name").val('');
+                    $("#Email").val('');
+            },
+            error: function (res) {
+                alert('Error');
+            }
+        })
+    }
+    function Delete(Id) {
+        var conf = confirm("Are You Sure You Want To Delete this Record ?");
+        if (conf) {
+            debugger
+            $.ajax({
+                url: "/Home/Delete/"+Id,
+                type: "POST",
+                contentType: "application/json;charset-utf=8",
+                dataType: "json",
+                success: function () {
+                    alert('Record Deleted ');
+                   
+                },
+                error: function () {
+                    alert("error");
+                }
+            })
+        }
+    }
+</script>
